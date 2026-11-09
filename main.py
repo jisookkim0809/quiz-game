@@ -1,4 +1,30 @@
-# 캠핑 퀴즈 게임 - 메뉴 화면
+# 캠핑 퀴즈 게임 
+
+# ===== Quiz 클래스: 퀴즈 문제 하나를 표현 =====
+
+class Quiz:
+    def __init__(self, question, choices, answer):
+        self.question = question
+        self.choices = choices
+        self.answer = answer
+
+    # 문제와 선택지를 화면에 보여 주기
+
+    def display(self, number):
+        print("-" * 40)  
+        print(f"[문제 {number}]")
+        print(self.question)
+        print() 
+        for i, option in enumerate(self.choices, start=1):
+            print(f"{i}. {option}")
+        print()
+
+    # 정답인지 확인하기 (맞으면 True, 틀리면 False)
+
+    def check_answer(self, user_answer):
+        return user_answer == self.answer
+
+# ===== 메뉴 =====
 
 while True:
     print("=" * 40)
