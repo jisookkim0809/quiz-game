@@ -187,4 +187,7 @@ quiz-game/
 - **브랜치**: `feature/play-quiz` 브랜치에서 퀴즈 풀기 기능을 개발한 뒤 `main`에 병합(`merge --no-ff`)했습니다.
 - **사용한 Git 명령어**: `init`, `add`, `commit`, `push`, `checkout`, `clone`, `pull`
 
+### 커밋 기록 (`git log --oneline --graph`)
+![git log](docs/screenshots/git_log.png)
+
 > 🌿 이 줄은 clone/pull 실습을 위해 복제한 저장소(quiz-game-clone)에서 추가했습니다.
