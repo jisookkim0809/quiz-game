@@ -58,8 +58,59 @@ def get_default_quizzes():
         ),
     ]
 
+ # ===== 숫자 입력 받기 (공통 입력 검사) =====
+def get_number_input(prompt, min_value, max_value):
+    while True:
+        text = input(prompt).strip()
 
-# ===== 테스트 (확인 후 일부 지울 거예요) =====
+        if text == "":
+            print(f"입력이 비어 있습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+            continue
+
+        try:
+            value = int(text)
+        except ValueError:
+            print(f"숫자가 아닙니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+            continue
+
+        if value < min_value or value > max_value:
+            print(f"범위를 벗어났습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+            continue
+
+        return value
+
+
+# ===== 퀴즈 풀기 =====
+def play_quiz(quizzes):
+    # 퀴즈가 하나도 없을 때
+    if len(quizzes) == 0:
+        print("등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+        return
+
+    total = len(quizzes)
+    correct = 0
+
+    print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
+
+    for i, quiz in enumerate(quizzes, start=1):
+        quiz.display(i)
+        answer = get_number_input("정답 입력: ", 1, 4)
+
+        if quiz.check_answer(answer):
+            print("✅ 정답입니다!")
+            correct += 1
+        else:
+            right_text = quiz.choices[quiz.answer - 1]
+            print(f"❌ 오답입니다. 정답은 {quiz.answer}번 ({right_text}) 입니다.")
+
+    score = int(correct / total * 100)
+    print("=" * 40)
+    print(f"🏆 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
+    print("=" * 40)
+    return correct
+
+
+# ===== 퀴즈 목록 준비 =====
 quizzes = get_default_quizzes()
 
 # ===== 메뉴 =====
@@ -70,11 +121,11 @@ while True:
     print("1. 퀴즈 풀기")
     print("2. 퀴즈 추가")
     print("3. 퀴즈 목록")
-    print("4. 점수 확인") 
+    print("4. 점수 확인")
     print("5. 종료")
     print("=" * 40)
-     
-    choice = input("선택: ").strip() 
+
+    choice = input("선택: ").strip()
 
     if choice == "":
         print("입력이 비어 있습니다. 1-5 사이의 숫자를 입력하세요.")
@@ -83,7 +134,7 @@ while True:
     try:
         number = int(choice)
     except ValueError:
-        print("숫자가 아닙니다. 1-5사이의 숫자를 입력하세요.")
+        print("숫자가 아닙니다. 1-5 사이의 숫자를 입력하세요.")
         continue
 
     if number < 1 or number > 5:
@@ -91,9 +142,9 @@ while True:
         continue
 
     if number == 1:
-        print("퀴즈 풀기를 선택했습니다.")
+        play_quiz(quizzes)
     elif number == 2:
-        print("퀴즈 추가를 선택했습니다.")  
+        print("퀴즈 추가를 선택했습니다.")
     elif number == 3:
         print("퀴즈 목록을 선택했습니다.")
     elif number == 4:
