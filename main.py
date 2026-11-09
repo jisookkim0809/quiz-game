@@ -107,7 +107,7 @@ def play_quiz(quizzes):
     print("=" * 40)
     print(f"🏆 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
     print("=" * 40)
-    return correct
+    return score
 
 # ===== 글자 입력 받기 (빈 입력 방지) =====
 def get_text_input(prompt):
@@ -153,8 +153,16 @@ def show_quiz_list(quizzes):
         print(f"[{i}] {quiz.question}")
     print("-" * 40)
 
+# ===== 점수 확인 =====
+def show_score(best_score):
+    if best_score is None:
+        print("\n아직 퀴즈를 풀지 않았습니다. 먼저 퀴즈를 풀어 보세요!")
+        return
+    print(f"\n🏆 최고 점수: {best_score}점")
+
 # ===== 퀴즈 목록 준비 =====
 quizzes = get_default_quizzes()
+best_score = None
 
 # ===== 메뉴 =====
 while True:
@@ -185,13 +193,17 @@ while True:
         continue
 
     if number == 1:
-        play_quiz(quizzes)
+        score = play_quiz(quizzes)
+        if score is not None:
+            if best_score is None or score > best_score:
+                best_score = score
+                print("🎉 새로운 최고 점수입니다!")
     elif number == 2:
         add_quiz(quizzes)
     elif number == 3:
         show_quiz_list(quizzes)
     elif number == 4:
-        print("점수 확인을 선택했습니다.")
+        show_score(best_score)
     elif number == 5:
         print("게임을 종료합니다. 다음 캠핑에서 만나요!")
         break
