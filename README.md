@@ -152,7 +152,9 @@ quiz-game/
 ![메뉴](docs/screenshots/menu.png)
 
 ### 퀴즈 풀기
-![퀴즈 풀기](docs/screenshots/play.png)
+![퀴즈 풀기 1](docs/screenshots/play1.png)
+![퀴즈 풀기 2](docs/screenshots/play2.png)
+![퀴즈 풀기 3](docs/screenshots/play3.png)
 
 ### 퀴즈 추가
 ![퀴즈 추가 1](docs/screenshots/add_quiz1.png)
