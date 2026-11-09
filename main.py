@@ -269,4 +269,10 @@ class QuizGame:
 
 # ===== 프로그램 시작 =====
 game = QuizGame()
-game.run()
+try:
+    game.run()
+except (KeyboardInterrupt, EOFError):
+    # Ctrl+C 또는 입력 종료(Ctrl+Z) 시 안전하게 저장 후 종료
+    print("\n\n⚠️ 프로그램이 중단되었습니다. 데이터를 저장하고 안전하게 종료합니다.")
+    game.save_data()
+    print("다음 캠핑에서 만나요! ⛺")
