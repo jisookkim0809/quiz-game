@@ -58,153 +58,139 @@ def get_default_quizzes():
         ),
     ]
 
- # ===== 숫자 입력 받기 (공통 입력 검사) =====
-def get_number_input(prompt, min_value, max_value):
-    while True:
-        text = input(prompt).strip()
+ # ===== QuizGame 클래스: 게임 전체를 관리 =====
+class QuizGame:
+    def __init__(self):
+        self.quizzes = get_default_quizzes()   # 퀴즈 목록
+        self.best_score = None                 # 최고 점수 (아직 없음)
 
-        if text == "":
-            print(f"입력이 비어 있습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
-            continue
+    # ---------- 입력 처리 ----------
+    def get_number_input(self, prompt, min_value, max_value):
+        while True:
+            text = input(prompt).strip()
 
-        try:
-            value = int(text)
-        except ValueError:
-            print(f"숫자가 아닙니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
-            continue
+            if text == "":
+                print(f"입력이 비어 있습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
 
-        if value < min_value or value > max_value:
-            print(f"범위를 벗어났습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
-            continue
+            try:
+                value = int(text)
+            except ValueError:
+                print(f"숫자가 아닙니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
 
-        return value
+            if value < min_value or value > max_value:
+                print(f"범위를 벗어났습니다. {min_value}-{max_value} 사이의 숫자를 입력하세요.")
+                continue
+
+            return value
+
+    def get_text_input(self, prompt):
+        while True:
+            text = input(prompt).strip()
+            if text == "":
+                print("입력이 비어 있습니다. 내용을 입력해 주세요.")
+                continue
+            return text
+
+    # ---------- 화면 ----------
+    def show_menu(self):
+        print("=" * 40)
+        print("       ⛺ 나만의 캠핑 퀴즈 게임 ⛺")
+        print("=" * 40)
+        print("1. 퀴즈 풀기")
+        print("2. 퀴즈 추가")
+        print("3. 퀴즈 목록")
+        print("4. 점수 확인")
+        print("5. 종료")
+        print("=" * 40)
+
+    # ---------- 1. 퀴즈 풀기 ----------
+    def play_quiz(self):
+        if len(self.quizzes) == 0:
+            print("\n등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+
+        total = len(self.quizzes)
+        correct = 0
+
+        print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
+
+        for i, quiz in enumerate(self.quizzes, start=1):
+            quiz.display(i)
+            answer = self.get_number_input("정답 입력: ", 1, 4)
+
+            if quiz.check_answer(answer):
+                print("✅ 정답입니다!")
+                correct += 1
+            else:
+                right_text = quiz.choices[quiz.answer - 1]
+                print(f"❌ 오답입니다. 정답은 {quiz.answer}번 ({right_text}) 입니다.")
+
+        score = int(correct / total * 100)
+        print("=" * 40)
+        print(f"🏆 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
+
+        if self.best_score is None or score > self.best_score:
+            self.best_score = score
+            print("🎉 새로운 최고 점수입니다!")
+        print("=" * 40)
+
+    # ---------- 2. 퀴즈 추가 ----------
+    def add_quiz(self):
+        print("\n📌 새로운 퀴즈를 추가합니다.\n")
+
+        question = self.get_text_input("문제를 입력하세요: ")
+
+        choices = []
+        for i in range(1, 5):
+            option = self.get_text_input(f"선택지 {i}: ")
+            choices.append(option)
+
+        answer = self.get_number_input("정답 번호 (1-4): ", 1, 4)
+
+        self.quizzes.append(Quiz(question, choices, answer))
+        print(f"\n✅ 퀴즈가 추가되었습니다! (현재 총 {len(self.quizzes)}개)")
+
+    # ---------- 3. 퀴즈 목록 ----------
+    def show_quiz_list(self):
+        if len(self.quizzes) == 0:
+            print("\n등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
+            return
+
+        print(f"\n📋 등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print("-" * 40)
+        for i, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{i}] {quiz.question}")
+        print("-" * 40)
+
+    # ---------- 4. 점수 확인 ----------
+    def show_score(self):
+        if self.best_score is None:
+            print("\n아직 퀴즈를 풀지 않았습니다. 먼저 퀴즈를 풀어 보세요!")
+            return
+        print(f"\n🏆 최고 점수: {self.best_score}점")
+
+    # ---------- 게임 실행 (메뉴 반복) ----------
+    def run(self):
+        while True:
+            self.show_menu()
+            number = self.get_number_input("선택: ", 1, 5)
+
+            if number == 1:
+                self.play_quiz()
+            elif number == 2:
+                self.add_quiz()
+            elif number == 3:
+                self.show_quiz_list()
+            elif number == 4:
+                self.show_score()
+            elif number == 5:
+                print("게임을 종료합니다. 다음 캠핑에서 만나요!")
+                break
 
 
-# ===== 퀴즈 풀기 =====
-def play_quiz(quizzes):
-    # 퀴즈가 하나도 없을 때
-    if len(quizzes) == 0:
-        print("등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
-        return
-
-    total = len(quizzes)
-    correct = 0
-
-    print(f"\n📝 퀴즈를 시작합니다! (총 {total}문제)")
-
-    for i, quiz in enumerate(quizzes, start=1):
-        quiz.display(i)
-        answer = get_number_input("정답 입력: ", 1, 4)
-
-        if quiz.check_answer(answer):
-            print("✅ 정답입니다!")
-            correct += 1
-        else:
-            right_text = quiz.choices[quiz.answer - 1]
-            print(f"❌ 오답입니다. 정답은 {quiz.answer}번 ({right_text}) 입니다.")
-
-    score = int(correct / total * 100)
-    print("=" * 40)
-    print(f"🏆 결과: {total}문제 중 {correct}문제 정답! ({score}점)")
-    print("=" * 40)
-    return score
-
-# ===== 글자 입력 받기 (빈 입력 방지) =====
-def get_text_input(prompt):
-    while True:
-        text = input(prompt).strip()
-        if text == "":
-            print("입력이 비어 있습니다. 내용을 입력해 주세요.")
-            continue
-        return text
-
-# ===== 퀴즈 추가 =====
-def add_quiz(quizzes):
-    print("\n 새로운 퀴즈를 추가합니다.\n")
-
-    # 1) 문제 입력
-    question = get_text_input("문제를 입력하세요: ")
-
-    # 2) 선택지 4개 입력
-    choices = []
-    for i in range(1, 5):
-        option = get_text_input(f"선택지 {i}: ")
-        choices.append(option)
-
-    # 3) 정답 번호 입력 (Step 5에서 만든 함수 재사용!)
-    answer = get_number_input("정답 번호 (1-4): ", 1, 4)
-
-    # 4) 퀴즈 객체를 만들어서 목록에 추가
-    new_quiz = Quiz(question, choices, answer)
-    quizzes.append(new_quiz)
-
-    print(f"\n 퀴즈가 추가되었습니다! (현재 총 {len(quizzes)}개)")
-
-# ===== 퀴즈 목록 보기 =====
-def show_quiz_list(quizzes):
-    # 퀴즈가 하나도 없을 때
-    if len(quizzes) == 0:
-        print("\n등록된 퀴즈가 없습니다. 먼저 퀴즈를 추가해 주세요.")
-        return
-
-    print(f"\n📋 등록된 퀴즈 목록 (총 {len(quizzes)}개)")
-    print("-" * 40)
-    for i, quiz in enumerate(quizzes, start=1):
-        print(f"[{i}] {quiz.question}")
-    print("-" * 40)
-
-# ===== 점수 확인 =====
-def show_score(best_score):
-    if best_score is None:
-        print("\n아직 퀴즈를 풀지 않았습니다. 먼저 퀴즈를 풀어 보세요!")
-        return
-    print(f"\n🏆 최고 점수: {best_score}점")
-
-# ===== 퀴즈 목록 준비 =====
-quizzes = get_default_quizzes()
-best_score = None
-
-# ===== 메뉴 =====
-while True:
-    print("=" * 40)
-    print("       ⛺ 나만의 캠핑 퀴즈 게임 ⛺")
-    print("=" * 40)
-    print("1. 퀴즈 풀기")
-    print("2. 퀴즈 추가")
-    print("3. 퀴즈 목록")
-    print("4. 점수 확인")
-    print("5. 종료")
-    print("=" * 40)
-
-    choice = input("선택: ").strip()
-
-    if choice == "":
-        print("입력이 비어 있습니다. 1-5 사이의 숫자를 입력하세요.")
-        continue
-
-    try:
-        number = int(choice)
-    except ValueError:
-        print("숫자가 아닙니다. 1-5 사이의 숫자를 입력하세요.")
-        continue
-
-    if number < 1 or number > 5:
-        print("범위를 벗어났습니다. 1-5 사이의 숫자를 입력하세요.")
-        continue
-
-    if number == 1:
-        score = play_quiz(quizzes)
-        if score is not None:
-            if best_score is None or score > best_score:
-                best_score = score
-                print("🎉 새로운 최고 점수입니다!")
-    elif number == 2:
-        add_quiz(quizzes)
-    elif number == 3:
-        show_quiz_list(quizzes)
-    elif number == 4:
-        show_score(best_score)
-    elif number == 5:
-        print("게임을 종료합니다. 다음 캠핑에서 만나요!")
-        break
+# ===== 프로그램 시작 =====
+game = QuizGame()   # 게임 가게 열기 (객체 만들기)
+game.run()          # 영업 시작! (메뉴 반복 실행)
     
