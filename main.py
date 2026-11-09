@@ -1,27 +1,38 @@
-# 캠핑 퀴즈 게임 
+# 캠핑 퀴즈 게임
+import json
+
+DATA_FILE = "state.json"   # 데이터를 저장할 파일 (프로젝트 루트)
+
 
 # ===== Quiz 클래스: 퀴즈 문제 하나를 표현 =====
 class Quiz:
     def __init__(self, question, choices, answer):
-        self.question = question
-        self.choices = choices
-        self.answer = answer
+        self.question = question    # 문제 (글자)
+        self.choices = choices      # 선택지 4개 (리스트)
+        self.answer = answer        # 정답 번호 1~4 (숫자)
 
     # 문제와 선택지를 화면에 보여 주기
-
     def display(self, number):
-        print("-" * 40)  
+        print("-" * 40)
         print(f"[문제 {number}]")
         print(self.question)
-        print() 
+        print()
         for i, option in enumerate(self.choices, start=1):
             print(f"{i}. {option}")
         print()
 
     # 정답인지 확인하기 (맞으면 True, 틀리면 False)
-
     def check_answer(self, user_answer):
         return user_answer == self.answer
+
+    # 🆕 저장용: Quiz 객체 → dict
+    def to_dict(self):
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
+
 
 # ===== 기본 캠핑 퀴즈 데이터 =====
 def get_default_quizzes():
@@ -58,11 +69,74 @@ def get_default_quizzes():
         ),
     ]
 
- # ===== QuizGame 클래스: 게임 전체를 관리 =====
+
+# ===== QuizGame 클래스: 게임 전체를 관리 =====
 class QuizGame:
     def __init__(self):
-        self.quizzes = get_default_quizzes()   # 퀴즈 목록
-        self.best_score = None                 # 최고 점수 (아직 없음)
+        self.quizzes = []          # 퀴즈 목록
+        self.best_score = None     # 최고 점수 (아직 없음)
+        self.load_data()           # 🆕 시작할 때 파일에서 불러오기
+
+    # ---------- 🆕 파일 불러오기 ----------
+    def load_data(self):
+        try:
+            with open(DATA_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+
+            # dict → Quiz 객체로 바꿔서 목록 만들기
+            loaded_quizzes = []
+            for item in data["quizzes"]:
+                quiz = Quiz(item["question"], item["choices"], item["answer"])
+                loaded_quizzes.append(quiz)
+
+            self.quizzes = loaded_quizzes
+            self.best_score = data["best_score"]
+
+            if self.best_score is None:
+                score_text = "기록 없음"
+            else:
+                score_text = f"{self.best_score}점"
+            print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(self.quizzes)}개, 최고점수 {score_text})")
+
+        except FileNotFoundError:
+            # 처음 실행: 파일이 없음
+            print("📂 저장된 데이터가 없어 기본 퀴즈로 시작합니다.")
+            self.reset_to_default()
+
+        except (json.JSONDecodeError, KeyError, TypeError):
+            # 파일 내용이 깨졌거나 형식이 맞지 않음
+            print("⚠️ 저장 파일이 손상되어 기본 퀴즈로 복구합니다.")
+            self.reset_to_default()
+
+        except OSError:
+            # 그 밖에 파일을 읽을 수 없는 경우
+            print("⚠️ 저장 파일을 읽을 수 없어 기본 퀴즈로 시작합니다.")
+            self.quizzes = get_default_quizzes()
+            self.best_score = None
+
+    # ---------- 🆕 기본 데이터로 초기화 + 저장 ----------
+    def reset_to_default(self):
+        self.quizzes = get_default_quizzes()
+        self.best_score = None
+        self.save_data()
+
+    # ---------- 🆕 파일 저장하기 ----------
+    def save_data(self):
+        # Quiz 객체 → dict로 바꿔서 목록 만들기
+        quiz_list = []
+        for quiz in self.quizzes:
+            quiz_list.append(quiz.to_dict())
+
+        data = {
+            "quizzes": quiz_list,
+            "best_score": self.best_score,
+        }
+
+        try:
+            with open(DATA_FILE, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=4)
+        except OSError:
+            print("⚠️ 데이터를 파일에 저장하지 못했습니다.")
 
     # ---------- 입력 처리 ----------
     def get_number_input(self, prompt, min_value, max_value):
@@ -134,6 +208,7 @@ class QuizGame:
         if self.best_score is None or score > self.best_score:
             self.best_score = score
             print("🎉 새로운 최고 점수입니다!")
+            self.save_data()       # 🆕 최고 점수 저장
         print("=" * 40)
 
     # ---------- 2. 퀴즈 추가 ----------
@@ -150,6 +225,7 @@ class QuizGame:
         answer = self.get_number_input("정답 번호 (1-4): ", 1, 4)
 
         self.quizzes.append(Quiz(question, choices, answer))
+        self.save_data()           # 🆕 추가한 퀴즈 저장
         print(f"\n✅ 퀴즈가 추가되었습니다! (현재 총 {len(self.quizzes)}개)")
 
     # ---------- 3. 퀴즈 목록 ----------
@@ -186,11 +262,11 @@ class QuizGame:
             elif number == 4:
                 self.show_score()
             elif number == 5:
+                self.save_data()   # 🆕 종료 전 저장
                 print("게임을 종료합니다. 다음 캠핑에서 만나요!")
                 break
 
 
 # ===== 프로그램 시작 =====
-game = QuizGame()   # 게임 가게 열기 (객체 만들기)
-game.run()          # 영업 시작! (메뉴 반복 실행)
-    
+game = QuizGame()
+game.run()

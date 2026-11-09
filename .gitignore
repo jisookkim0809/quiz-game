@@ -3,3 +3,6 @@ __pycache__/
 
 .venv/
 .vscode/
+
+# 게임 실행 중 만들어지는 데이터 파일
+state.json
