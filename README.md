@@ -95,17 +95,17 @@ quiz-game/
 ├── .gitignore           # Git에 올리지 않을 파일 목록
 ├── README.md            # 프로젝트 설명서
 └── docs/
-    └── screenshots/     # 실행 화면 스크린샷
+└── screenshots/     # 실행 화면 스크린샷
         ├── env.png
         ├── menu.png
-        ├── play.png
+        ├── play1.png
+        ├── play2.png
+        ├── play3.png
         ├── add_quiz1.png
         ├── add_quiz2.png
         ├── list.png
         ├── score.png
         └── data_keep.png
-```
-
 ---
 
 ## 6. 데이터 파일 설명 (`state.json`)
