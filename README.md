@@ -19,11 +19,11 @@
 2. [퀴즈 주제와 선정 이유](#2-퀴즈-주제와-선정-이유)
 3. [실행 방법](#3-실행-방법)
 4. [기능 목록](#4-기능-목록)
-5. [파일 구조](#5-파일-구조)
-6. [데이터 파일 설명 (state.json)](#6-데이터-파일-설명-statejson)
-7. [실행 화면](#7-실행-화면)
-8. [Git 작업 기록](#8-git-작업-기록)
-9. [요구사항 충족 확인 (평가자용)](#9-요구사항-충족-확인-평가자용)
+5. [구현 과정](#5-구현-과정)
+6. [파일 구조](#6-파일-구조)
+7. [데이터 파일 설명 (state.json)](#7-데이터-파일-설명-statejson)
+8. [실행 화면](#8-실행-화면)
+9. [Git 작업 기록](#9-git-작업-기록)
 
 ---
 
@@ -119,7 +119,120 @@ python main.py
 
 ---
 
-## 5. 파일 구조
+## 5. 구현 과정
+
+기능을 하나씩 완성하고, 완성할 때마다 커밋하는 방식으로 진행했습니다.
+
+### 1단계. 개발 환경 준비와 저장소 생성
+
+- Python, Git, VS Code(Python 확장)를 설치하고 Git 사용자 이름과 이메일을 등록했습니다.
+- GitHub에 `quiz-game` 저장소를 만들고 `.gitignore`, `README.md`를 작성해 첫 커밋과 push를 했습니다.
+- 사용 명령어: `git init`, `git add`, `git commit`, `git push`
+
+### 2단계. 메뉴 화면
+
+- `print`로 메뉴를 출력하고 `input`으로 번호를 입력받았습니다.
+- `while True` 반복문으로 종료를 선택할 때까지 메뉴가 계속 나오게 했고, 5번을 고르면 `break`로 빠져나옵니다.
+- 입력값은 `.strip()`으로 공백을 지우고, `int()` 변환을 `try/except ValueError`로 감싸 문자 입력을 처리했습니다.
+- 빈 입력과 범위 밖 숫자는 `continue`로 다시 입력받도록 했습니다.
+
+### 3단계. Quiz 클래스
+
+- 문제, 선택지, 정답을 하나로 묶는 `Quiz` 클래스를 만들었습니다.
+- `__init__`에서 `self.question`, `self.choices`, `self.answer` 속성을 저장합니다.
+- `display()`는 `enumerate`로 선택지에 1~4 번호를 붙여 출력하고, `check_answer()`는 정답 여부를 `True`/`False`로 반환합니다.
+
+```python
+class Quiz:
+    def __init__(self, question, choices, answer):
+        self.question = question
+        self.choices = choices
+        self.answer = answer
+
+    def check_answer(self, user_answer):
+        return user_answer == self.answer
+```
+
+### 4단계. 기본 캠핑 퀴즈 데이터
+
+- 캠핑 장비, 안전, 매너를 주제로 퀴즈 6개를 작성했습니다.
+- `get_default_quizzes()` 함수가 `Quiz` 객체 6개가 담긴 리스트를 반환하도록 만들어, 나중에 파일이 없거나 손상됐을 때도 다시 불러올 수 있게 했습니다.
+
+### 5단계. 퀴즈 풀기 (브랜치 작업)
+
+- `feature/play-quiz` 브랜치를 만들어 작업한 뒤 `main` 브랜치에 병합했습니다.
+- `for` 반복문으로 퀴즈를 하나씩 출제하고, 맞힌 개수를 세어 100점 만점 점수로 계산합니다.
+- 오답일 때는 정답 번호와 정답 내용을 함께 보여줍니다.
+- 메뉴와 정답 입력에서 같은 검사를 반복하지 않도록 입력 검사를 `get_number_input(prompt, min_value, max_value)` 함수로 분리했습니다.
+- 사용 명령어: `git checkout -b`, `git checkout`, `git merge --no-ff`
+
+### 6단계. 퀴즈 추가
+
+- 문제와 선택지 4개를 `for` 반복문으로 입력받아 리스트에 `append`하고, 정답 번호는 `get_number_input()`으로 1~4 범위를 검사합니다.
+- 빈 문자열 입력을 막기 위해 `get_text_input()` 함수를 추가했습니다.
+
+### 7단계. 퀴즈 목록
+
+- 등록된 퀴즈의 문제만 번호와 함께 출력하고, 퀴즈가 없을 때는 안내 메시지를 보여줍니다.
+
+### 8단계. 점수 확인
+
+- 최고 점수를 `None`으로 시작해 "아직 풀지 않음"과 "0점"을 구분했습니다.
+- 퀴즈를 마칠 때마다 최고 점수와 비교해 더 높으면 갱신하고 "새로운 최고 점수입니다!"를 출력합니다.
+
+### 9단계. QuizGame 클래스로 구조 정리 (리팩터링)
+
+- 흩어져 있던 함수와 변수를 `QuizGame` 클래스로 묶었습니다.
+  - 변수 `quizzes`, `best_score` → 속성 `self.quizzes`, `self.best_score`
+  - 함수 `play_quiz(quizzes)` → 메서드 `self.play_quiz()`
+- 메뉴의 입력 검사도 `get_number_input()`을 사용하도록 바꿔 중복 코드를 없앴습니다.
+- 동작은 그대로 유지하고, 모든 메뉴를 다시 테스트해 확인했습니다.
+
+### 10단계. state.json 저장과 불러오기
+
+- `json` 모듈로 퀴즈 목록과 최고 점수를 `state.json`에 저장합니다.
+- JSON은 객체를 직접 저장할 수 없으므로, 저장할 때는 `to_dict()`로 Quiz 객체를 dict로 바꾸고 불러올 때는 dict를 다시 Quiz 객체로 만듭니다.
+- 파일이 없으면(`FileNotFoundError`) 기본 퀴즈로 시작하고, 파일이 손상되면(`json.JSONDecodeError`, `KeyError`, `TypeError`) 기본 퀴즈로 복구합니다.
+- `state.json`은 실행할 때마다 바뀌는 파일이라 `.gitignore`에 추가했습니다.
+
+```python
+def save_data(self):
+    quiz_list = []
+    for quiz in self.quizzes:
+        quiz_list.append(quiz.to_dict())
+
+    data = {"quizzes": quiz_list, "best_score": self.best_score}
+
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except OSError:
+        print("데이터를 파일에 저장하지 못했습니다.")
+```
+
+### 11단계. 안전한 종료 처리
+
+- 실행 중 `Ctrl + C`(KeyboardInterrupt)나 입력 종료(EOFError)가 발생해도 오류 화면 없이 끝나도록 `game.run()`을 `try/except`로 감쌌습니다.
+- 종료 전에 `save_data()`를 호출해 그때까지의 데이터를 저장합니다.
+
+```python
+game = QuizGame()
+try:
+    game.run()
+except (KeyboardInterrupt, EOFError):
+    print("프로그램이 중단되었습니다. 데이터를 저장하고 안전하게 종료합니다.")
+    game.save_data()
+```
+
+### 12단계. README 작성과 clone / pull 실습
+
+- 실행 화면 스크린샷을 `docs/screenshots`에 모으고 README를 작성했습니다.
+- 저장소를 다른 폴더(`quiz-game-clone`)로 `clone`해 README를 수정하고 push한 뒤, 원래 작업 폴더에서 `pull`로 변경 사항을 받아왔습니다.
+- 사용 명령어: `git clone`, `git pull`
+
+---
+
+## 6. 파일 구조
 
 ```
 quiz-game/
@@ -144,7 +257,7 @@ quiz-game/
 
 ---
 
-## 6. 데이터 파일 설명 (state.json)
+## 7. 데이터 파일 설명 (state.json)
 
 | 항목 | 내용 |
 |:---|:---|
@@ -182,7 +295,7 @@ quiz-game/
 
 ---
 
-## 7. 실행 화면
+## 8. 실행 화면
 
 ### 개발 환경
 
@@ -217,25 +330,7 @@ quiz-game/
 
 ---
 
-## 8. Git 작업 기록
-
-### 작업 순서
-
-| 순서 | 작업 | 커밋 |
-|:---:|:---|:---|
-| 1 | 프로젝트 초기 설정 | `Chore` |
-| 2 | 메뉴 기능 | `Feat` |
-| 3 | Quiz 클래스 | `Feat` |
-| 4 | 기본 퀴즈 데이터 | `Feat` |
-| 5 | 퀴즈 풀기 (`feature/play-quiz` 브랜치에서 개발 후 `main`에 병합) | `Feat`, `Merge` |
-| 6 | 퀴즈 추가 | `Feat` |
-| 7 | 퀴즈 목록 | `Feat` |
-| 8 | 점수 확인 | `Feat` |
-| 9 | QuizGame 클래스로 구조 정리 | `Refactor` |
-| 10 | state.json 저장/불러오기 | `Feat` |
-| 11 | Ctrl+C / EOF 안전 종료 | `Fix` |
-| 12 | README 작성 및 스크린샷 | `Docs` |
-| 13 | clone / pull 실습 | `Docs` |
+## 9. Git 작업 기록
 
 ### 커밋 메시지 규칙
 
@@ -257,42 +352,12 @@ quiz-game/
 
 ### 커밋 기록 (git log --oneline --graph)
 
+`feature/play-quiz` 브랜치에서 퀴즈 풀기 기능을 만들고 `main`에 병합한 기록을 그래프로 확인할 수 있습니다.
+
 <img src="docs/screenshots/git_log.png" width="700">
 
 ### clone / pull 실습 기록
 
-아래 문장은 clone/pull 실습을 위해 복제한 저장소(quiz-game-clone)에서 추가한 뒤, 원래 작업 폴더에서 `git pull`로 받아온 내용입니다.
+아래 문장은 복제한 저장소(quiz-game-clone)에서 추가한 뒤, 원래 작업 폴더에서 `git pull`로 받아온 내용입니다.
 
 > 이 줄은 clone/pull 실습을 위해 복제한 저장소(quiz-game-clone)에서 추가했습니다.
-
----
-
-## 9. 요구사항 충족 확인 (평가자용)
-
-### 요구사항별 구현 위치
-
-| 요구사항 | 구현 위치 | 확인 방법 |
-|:---|:---|:---|
-| 메뉴 출력 및 선택 | `QuizGame.run()`, `show_menu()` | 실행 직후 메뉴 화면 |
-| 잘못된 입력 처리 (공백, 빈 입력, 문자, 범위) | `QuizGame.get_number_input()` | 메뉴에서 Enter, `abc`, `9` 입력 |
-| 퀴즈 풀기 / 결과 표시 | `QuizGame.play_quiz()` | 메뉴 1 |
-| 퀴즈 추가 | `QuizGame.add_quiz()` | 메뉴 2 |
-| 퀴즈 목록 | `QuizGame.show_quiz_list()` | 메뉴 3 |
-| 최고 점수 확인 및 갱신 | `QuizGame.show_score()`, `play_quiz()` | 메뉴 4 |
-| 주제 퀴즈 5개 이상 | `get_default_quizzes()` (6개) | 메뉴 3 |
-| 클래스 2개 이상 | `Quiz`, `QuizGame` | `main.py` |
-| state.json 저장/불러오기 | `QuizGame.save_data()`, `load_data()` | 아래 테스트 1 |
-| 파일 없음 / 손상 처리 | `QuizGame.load_data()` | 아래 테스트 2, 3 |
-| Ctrl+C / EOF 안전 종료 | `main.py` 마지막 `try/except` | 아래 테스트 4 |
-| 커밋 10개 이상 | 커밋 19개 | `git log --oneline` |
-| 브랜치 생성 및 병합 | `feature/play-quiz` → `main` | `git log --oneline --graph` |
-| Git 명령어 7종 | init, add, commit, push, checkout, clone, pull | 8장 참고 |
-
-### 직접 확인해 볼 수 있는 테스트
-
-| 번호 | 테스트 | 방법 | 예상 결과 |
-|:---:|:---|:---|:---|
-| 1 | 데이터 유지 | 메뉴 2로 퀴즈 추가, 메뉴 1로 퀴즈 풀기 → 메뉴 5로 종료 → 다시 실행 | 시작 시 "저장된 데이터를 불러왔습니다 (퀴즈 7개, 최고점수 N점)" 출력, 메뉴 3·4에서 확인 |
-| 2 | 파일 없음 | `state.json` 삭제 후 실행 | "저장된 데이터가 없어 기본 퀴즈로 시작합니다" 출력, 파일 새로 생성 |
-| 3 | 파일 손상 | `state.json`의 첫 글자 `{` 삭제 후 실행 | "저장 파일이 손상되어 기본 퀴즈로 복구합니다" 출력 |
-| 4 | 안전 종료 | 실행 중 `Ctrl + C` 입력 | 오류 메시지 없이 안내 문구 출력 후 저장하고 종료 |
