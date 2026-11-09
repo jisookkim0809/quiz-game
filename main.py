@@ -109,6 +109,36 @@ def play_quiz(quizzes):
     print("=" * 40)
     return correct
 
+# ===== 글자 입력 받기 (빈 입력 방지) =====
+def get_text_input(prompt):
+    while True:
+        text = input(prompt).strip()
+        if text == "":
+            print("입력이 비어 있습니다. 내용을 입력해 주세요.")
+            continue
+        return text
+
+# ===== 퀴즈 추가 =====
+def add_quiz(quizzes):
+    print("\n 새로운 퀴즈를 추가합니다.\n")
+
+    # 1) 문제 입력
+    question = get_text_input("문제를 입력하세요: ")
+
+    # 2) 선택지 4개 입력
+    choices = []
+    for i in range(1, 5):
+        option = get_text_input(f"선택지 {i}: ")
+        choices.append(option)
+
+    # 3) 정답 번호 입력 (Step 5에서 만든 함수 재사용!)
+    answer = get_number_input("정답 번호 (1-4): ", 1, 4)
+
+    # 4) 퀴즈 객체를 만들어서 목록에 추가
+    new_quiz = Quiz(question, choices, answer)
+    quizzes.append(new_quiz)
+
+    print(f"\n 퀴즈가 추가되었습니다! (현재 총 {len(quizzes)}개)")
 
 # ===== 퀴즈 목록 준비 =====
 quizzes = get_default_quizzes()
@@ -144,7 +174,7 @@ while True:
     if number == 1:
         play_quiz(quizzes)
     elif number == 2:
-        print("퀴즈 추가를 선택했습니다.")
+        add_quiz(quizzes)
     elif number == 3:
         print("퀴즈 목록을 선택했습니다.")
     elif number == 4:
